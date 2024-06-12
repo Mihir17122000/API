@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prince Solutions Chat Assistant</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        #chatbox {
+            width: 500px;
+            max-width: 90%;
+            height: 80vh;
+            background-color: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        #chatlogs {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .chat {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: flex-end;
+        }
+        .chat.you .chat-message {
+            background-color: #d1e7dd;
+            color: #0f5132;
+            border-radius: 10px 10px 0 10px;
+            padding: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+            margin-left: auto;
+        }
+        .chat.prince .chat-message {
+            background-color: #cfe2ff;
+            color: #084298;
+            border-radius: 10px 10px 10px 0;
+            padding: 10px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+        .chat-message {
+            font-size: 14px;
+        }
+        .chat .name {
+            font-size: 12px;
+            margin-bottom: 5px;
+            margin-right: 5px;
+        }
+        #userInput {
+            display: flex;
+            border-top: 1px solid #ccc;
+            padding: 10px;
+        }
+        #userInput input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #userInput button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="chatbox">
+        <div id="chatlogs"></div>
+        <div id="userInput">
+            <input type="text" id="message" placeholder="Type a message..." onkeypress="handleKeyPress(event)"/>
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+    <script>
+        async function sendMessage() {
+            const messageInput = document.getElementById('message');
+            const message = messageInput.value;
+            if (message.trim() === '') return;
+
+            // Display user's message
+            displayMessage('You', message, 'you');
+
+            // Clear input field
+            messageInput.value = '';
+
+            try {
+                const response = await fetch('/chat', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ message: message })
+                });
+                const data = await response.json();
+                const reply = data.response;
+
+                // Display bot's reply
+                displayMessage('Prince Solution', reply, 'prince');
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+
+        function displayMessage(name, message, sender) {
+            const chatlogs = document.getElementById('chatlogs');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('chat', sender);
+
+            const nameElement = document.createElement('div');
+            nameElement.classList.add('name');
+            nameElement.textContent = name + ':';
+
+            const messageContent = document.createElement('div');
+            messageContent.classList.add('chat-message');
+            messageContent.textContent = message;
+
+            messageElement.appendChild(nameElement);
+            messageElement.appendChild(messageContent);
+            chatlogs.appendChild(messageElement);
+
+            // Scroll to the bottom of the chatlogs
+            chatlogs.scrollTop = chatlogs.scrollHeight;
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
